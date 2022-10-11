@@ -16,23 +16,12 @@ public class MessageController {
 
     private final MessageService messageService;
 
-//    private final NotificationService notificationService;
+//    @MessageMapping("/room/{roomId}")
+//    public Message getMessage(@DestinationVariable String roomId, @Payload Message message) {
 //
-//    @MessageMapping("/private-message")
-//    @SendToUser("/topic/private-messages")
-//    public void inviteUserToTeam(TeamInvitationDto teamInvitation) {
+//        messageService.saveChatMessage(message);
 //
-//        notificationService.sendTeamInviteNotification(teamInvitation);
-//
-//        log.info("User id: {} send invite to team", NotificationService.userId);
+//        return message;
 //    }
-
-    @MessageMapping("/room/{roomId}")
-    public Message getMessage(@DestinationVariable String roomId, @Payload Message message) {
-
-        messageService.saveChatMessage(roomId, message);
-
-        return message;
-    }
 
 }

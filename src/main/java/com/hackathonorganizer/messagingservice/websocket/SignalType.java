@@ -1,0 +1,12 @@
+package com.hackathonorganizer.messagingservice.websocket;
+
+public enum SignalType {
+
+    Login,
+    UserId,
+    Offer,
+    Answer,
+    Ice,
+    NewMember,
+
+}

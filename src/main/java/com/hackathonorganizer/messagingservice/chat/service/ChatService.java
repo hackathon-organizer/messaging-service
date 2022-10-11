@@ -7,8 +7,9 @@ import com.hackathonorganizer.messagingservice.chat.repository.MessageRepository
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.WebSocketSession;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +18,7 @@ public class ChatService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final MessageRepository messageRepository;
+
 
     public Long createTeamChat(Long teamId) {
 
@@ -34,4 +36,5 @@ public class ChatService {
 
         return roomMessages;
     }
+
 }
