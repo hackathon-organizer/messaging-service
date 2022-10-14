@@ -1,6 +1,6 @@
 package com.hackathonorganizer.messagingservice.chat.controller;
 
-import com.hackathonorganizer.messagingservice.chat.model.Message;
+import com.hackathonorganizer.messagingservice.websocket.model.Message;
 import com.hackathonorganizer.messagingservice.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

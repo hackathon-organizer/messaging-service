@@ -21,40 +21,8 @@ import java.util.Map;
 public class WebSocketConfig implements WebSocketConfigurer {
 
     private final MessageService messageService;
-
-//    @Override
-//    public void configureMessageBroker(MessageBrokerRegistry registry) {
-//        registry.enableSimpleBroker("/topic");
-//        registry.setApplicationDestinationPrefixes("/ws");
-//    }
-//
-//    @Override
-//    public void registerStompEndpoints(StompEndpointRegistry registry) {
-//        registry.addEndpoint("/messages-websocket")
-//                // .setHandshakeHandler(new UserHandshakeHandler())
-//                .setAllowedOrigins("*");
-//        registry.addEndpoint("/sockjs")
-//                .setAllowedOrigins("*")
-//                .withSockJS();
-//    }
-
-
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new SignalHandler(messageService), "/messages" +
-                "-websocket").setAllowedOrigins("*");
+        registry.addHandler(new SignalHandler(messageService), "/messages-websocket").setAllowedOrigins("*");
     }
-
-//    @Bean
-//    public WebSocketHandler signalHandler() {
-//        return new SignalHandler();
-//    }
-//
-//    @Bean
-//    public ServletServerContainerFactoryBean createWebSocketContainer() {
-//        ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
-//        container.setMaxTextMessageBufferSize(8192);
-//        container.setMaxBinaryMessageBufferSize(8192);
-//        return container;
-//    }
 }

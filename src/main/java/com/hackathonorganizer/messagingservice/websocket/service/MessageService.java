@@ -1,8 +1,9 @@
 package com.hackathonorganizer.messagingservice.websocket.service;
 
 
-import com.hackathonorganizer.messagingservice.chat.model.Message;
+import com.hackathonorganizer.messagingservice.websocket.model.Message;
 import com.hackathonorganizer.messagingservice.chat.repository.MessageRepository;
+import com.hackathonorganizer.messagingservice.websocket.model.ChatEntry;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +22,20 @@ public class MessageService {
 
 
 
-    public void saveChatMessage(Message message) {
+    public ChatEntry saveChatMessage(Message message) {
 
         message.setCreatedAt(LocalDateTime.now());
 
-        messageRepository.save(message);
+        Message savedMessage = messageRepository.save(message);
+
+        return mapToDto(savedMessage);
+    }
+
+    private ChatEntry mapToDto(Message message) {
+        return ChatEntry.builder()
+                .username(message.getUsername())
+                .entryText(message.getEntryText())
+                .createdAt(message.getCreatedAt())
+                .build();
     }
 }

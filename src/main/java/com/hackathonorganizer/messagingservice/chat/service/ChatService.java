@@ -1,13 +1,12 @@
 package com.hackathonorganizer.messagingservice.chat.service;
 
 import com.hackathonorganizer.messagingservice.chat.model.ChatRoom;
-import com.hackathonorganizer.messagingservice.chat.model.Message;
+import com.hackathonorganizer.messagingservice.websocket.model.Message;
 import com.hackathonorganizer.messagingservice.chat.repository.ChatRoomRepository;
 import com.hackathonorganizer.messagingservice.chat.repository.MessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.socket.WebSocketSession;
 
 import java.util.*;
 

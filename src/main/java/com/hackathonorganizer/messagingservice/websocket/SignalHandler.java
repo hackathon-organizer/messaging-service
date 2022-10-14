@@ -1,199 +1,152 @@
 package com.hackathonorganizer.messagingservice.websocket;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hackathonorganizer.messagingservice.chat.model.Message;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.hackathonorganizer.messagingservice.websocket.model.Message;
+import com.hackathonorganizer.messagingservice.websocket.model.*;
 import com.hackathonorganizer.messagingservice.websocket.service.MessageService;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 
 
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @Slf4j
 @Service
+@AllArgsConstructor
 public class SignalHandler extends TextWebSocketHandler  {
-
-
-
-//    List<WebSocketSession>sessions = new LinkedList<WebSocketSession>();
-//    ConcurrentHashMap<String,WebSocketSession> sessionMap = new ConcurrentHashMap<String,WebSocketSession>();
-//    final ObjectMapper map1=new ObjectMapper();
-
-    private List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();
-    private Map<Long, List<WebSocketSession>> teamRooms = new HashMap<>();
+    
+    private Map<Long, List<UserSession>> teamRooms = new HashMap<>();
     private final MessageService messageService;
 
-    @Autowired
-    public SignalHandler(MessageService messageService) {
-        this.messageService = messageService;
-    }
+    private Map<String, String> queryParams;
+
+    private final ObjectMapper objectMapper = JsonMapper.builder()
+            .addModule(new JavaTimeModule()).build();
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws InterruptedException, IOException {
 
-        log.info(session.toString());
+        Long chatId = Long.parseLong(queryParams.get("chatId"));
 
-        Message myObject = new ObjectMapper()
-                .readValue(message.getPayload(), Message.class);
-        myObject.setCreatedAt(LocalDateTime.now());
+        MessageDto messageDto = objectMapper
+                .readValue(message.getPayload(), MessageDto.class);
 
-        messageService.saveChatMessage(myObject);
+        switch (messageDto.getMessageType()) {
 
-        List<WebSocketSession> x =
-                teamRooms.get(myObject.getChatId()) == null ?
-                        new ArrayList<>() : teamRooms.get(myObject.getChatId());
-        x.add(session);
+            case OFFER, ANSWER, ICE_CANDIDATE -> sendSignalToChatParticipants(chatId, session, messageDto);
+            case MESSAGE -> sendMessageToChatParticipants(messageDto);
+            default -> throw new UnsupportedOperationException("Unsupported message type");
+        }
+    }
 
-        this.teamRooms.put(myObject.getChatId(), x);
+    private void sendSignalToChatParticipants(Long chatId,
+            WebSocketSession session, MessageDto messageDto) throws JsonProcessingException {
 
-        System.out.println(session.getAttributes().toString());
+        TextMessage textMessage =
+                new TextMessage(objectMapper.writeValueAsString(messageDto));
 
-//        for (WebSocketSession webSocketSession : sessions) {
-//            //if (webSocketSession.isOpen() && !session.getId().equals
-//            // (webSocketSession.getId())) {
-//
-//                webSocketSession.sendMessage(message);
-//            //}
-//        }
-
-        this.teamRooms.get(myObject.getChatId()).forEach(s -> {
+        this.teamRooms.get(chatId).forEach(s -> {
             try {
-                s.sendMessage(message);
+                if (s.getSession().isOpen() && !session.getId().equals(s.getSession().getId())) {
+                    s.getSession().sendMessage(textMessage);
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         });
+    }
 
+    private void sendMessageToChatParticipants(MessageDto myObject) throws JsonProcessingException {
+
+        Message msg = objectMapper.convertValue(myObject.getData(), Message.class);
+        msg.setCreatedAt(LocalDateTime.now());
+
+        ChatEntry chatEntry = messageService.saveChatMessage(msg);
+
+        MessageDto messageDto = new MessageDto(MessageType.MESSAGE, chatEntry);
+
+        TextMessage textMessage = new TextMessage(objectMapper.writeValueAsString(messageDto));
+
+        this.teamRooms.get(msg.getChatId()).forEach(s -> {
+            try {
+                s.getSession().sendMessage(textMessage);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        log.info("Add session {}", session.getId());
 
-        sessions.add(session);
+        log.info("Session {} connected", session.getId());
 
-                for (WebSocketSession webSocketSession : sessions) {
-            //if (webSocketSession.isOpen() && !session.getId().equals
-            // (webSocketSession.getId())) {
+        queryParams = UriComponentsBuilder.fromUriString(session.getUri().toString())
+                        .build().getQueryParams().toSingleValueMap();
 
-                    TextMessage textMessage = new TextMessage("User join chat");
-                    System.out.println('x');
 
-                // webSocketSession.sendMessage(textMessage);
-            //}
+        String username = queryParams.get("username");
+        Long chatId = Long.parseLong(queryParams.get("chatId"));
+
+
+        storeUserSession(chatId, username, session);
+
+        sendUserJoinNotification(chatId);
+    }
+
+    private void storeUserSession(Long chatId, String username, WebSocketSession session) {
+
+        UserSession userSession = new UserSession(username, session);
+
+        if (teamRooms.get(chatId) != null) {
+            teamRooms.get(chatId).add(userSession);
+        } else {
+            List<UserSession> sessionsList = new ArrayList<>();
+            sessionsList.add(userSession);
+            teamRooms.put(chatId, sessionsList);
         }
     }
 
-    @AllArgsConstructor
-    class TeamRoom {
-        WebSocketSession userSession;
-        Long roomId;
+    private void sendUserJoinNotification(Long chatId) throws IOException {
+
+        List<String> sessionUsernamesList =
+                this.teamRooms.get(chatId).stream().map(UserSession::getUsername).toList();
+        
+
+        MessageDto messageDto = new MessageDto(MessageType.JOIN, sessionUsernamesList);
+
+        TextMessage chatSessions =
+                new TextMessage(objectMapper.writeValueAsString(messageDto));
+
+        this.teamRooms.get(chatId).forEach(s -> {
+            try {
+                s.getSession().sendMessage(chatSessions);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
+    
+    @Override
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
 
+        Long chatId = Long.parseLong(queryParams.get("chatId"));
 
+        this.teamRooms.get(chatId).removeIf(userSession ->
+                userSession.getSession().getId().equals(session.getId()));
 
-//    @Override
-//    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-//
-//        System.out.println(session.getId());
-//
-//        final String  msg1=message.getPayload();
-//        SignalData sigData=map1.readValue(msg1, SignalData.class);
-//        log.debug("Receive message from client:",msg1);
-//
-//        SignalData sigResp=new SignalData();
-//
-//        if(sigData.getType().equalsIgnoreCase(SignalType.Login.toString()))	{
-//            SignalData sigResp2=new SignalData();
-//            String userId=UUID.randomUUID().toString();
-//            sigResp2.setUserId("signaling");
-//            sigResp2.setType(SignalType.UserId.toString());
-//            sigResp2.setData(userId);
-//            sessionMap.put(userId, session);
-//            session.sendMessage(new TextMessage(map1.writeValueAsString(sigResp2)));
-//
-//            return ;
-//        }
-//        else if(sigData.getType().equalsIgnoreCase(SignalType.NewMember.toString()))	{
-//
-//            sessionMap.values().forEach(a->{
-//
-//                SignalData sigResp2=new SignalData();
-//                sigResp2.setUserId(sigData.getUserId());
-//                sigResp2.setType(SignalType.NewMember.toString());
-//                try	{
-//                    //Check if websocket is open
-//                    if(a.isOpen())	{
-//                        log.debug("Sending New Member from",sigData.getUserId());
-//                        a.sendMessage(new TextMessage(map1.writeValueAsString(sigResp2)));
-//                    }
-//                }
-//                catch(Exception e)	{
-//                    log.error("Error Sending message:",e);
-//                }
-//            });
-//
-//
-//            return ;
-//        }
-//        else if(sigData.getType().equalsIgnoreCase(SignalType.Offer.toString()))	{
-//            sigResp=new SignalData();
-//            sigResp.setUserId(sigData.getUserId());
-//            sigResp.setType(SignalType.Offer.toString());
-//            sigResp.setData(sigData.getData());
-//            sigResp.setToUid(sigData.getToUid());
-//            sessionMap.get(sigData.getToUid()).sendMessage(new TextMessage(map1.writeValueAsString(sigResp)));
-//
-//
-//        }
-//        else if(sigData.getType().equalsIgnoreCase(SignalType.Answer.toString()))	{
-//            sigResp=new SignalData();
-//            sigResp.setUserId(sigData.getUserId());
-//            sigResp.setType(SignalType.Answer.toString());
-//            sigResp.setData(sigData.getData());
-//            sigResp.setToUid(sigData.getToUid());
-//            sessionMap.get(sigData.getToUid()).sendMessage(new TextMessage(map1.writeValueAsString(sigResp)));
-//
-//
-//        }
-//        else if(sigData.getType().equalsIgnoreCase(SignalType.Ice.toString()))	{
-//            sigResp=new SignalData();
-//            sigResp.setUserId(sigData.getUserId());
-//            sigResp.setType(SignalType.Ice.toString());
-//            sigResp.setData(sigData.getData());
-//            sigResp.setToUid(sigData.getToUid());
-//            sessionMap.get(sigData.getToUid()).sendMessage(new TextMessage(map1.writeValueAsString(sigResp)));
-//
-//
-//        }
-//
-//
-//    }
-//
-//    @Override
-//    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-//
-//        sessions.add(session);
-//        super.afterConnectionEstablished(session);
-//    }
-//
-//    @Override
-//    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-//
-//        sessions.remove(session);
-//        super.afterConnectionClosed(session, status);
-//    }
-
+        log.info("Closed session {}", session.getId());
+    }
 }

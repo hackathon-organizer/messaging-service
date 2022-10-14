@@ -1,6 +1,6 @@
 package com.hackathonorganizer.messagingservice.chat.repository;
 
-import com.hackathonorganizer.messagingservice.chat.model.Message;
+import com.hackathonorganizer.messagingservice.websocket.model.Message;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
