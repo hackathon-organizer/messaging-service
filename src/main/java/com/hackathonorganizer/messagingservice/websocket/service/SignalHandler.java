@@ -8,6 +8,7 @@ import com.hackathonorganizer.messagingservice.websocket.model.Message;
 import com.hackathonorganizer.messagingservice.websocket.model.*;
 import com.hackathonorganizer.messagingservice.websocket.service.MessageService;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.CloseStatus;
@@ -24,10 +25,10 @@ import java.util.*;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SignalHandler extends TextWebSocketHandler  {
     
-    private Map<Long, List<UserSession>> teamRooms = new HashMap<>();
+    private final Map<Long, List<UserSession>> teamRooms = new HashMap<>();
     private final MessageService messageService;
 
     private Map<String, String> queryParams;
