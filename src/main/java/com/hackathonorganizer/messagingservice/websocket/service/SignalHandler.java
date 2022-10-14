@@ -1,4 +1,4 @@
-package com.hackathonorganizer.messagingservice.websocket;
+package com.hackathonorganizer.messagingservice.websocket.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
