@@ -8,6 +8,5 @@ import java.util.List;
 
 public interface MessageRepository extends JpaRepository<Message, Long> {
 
-   @Query("SELECT m FROM Message m WHERE m.chatId = :roomId")
     List<Message> findMessagesByChatId(Long roomId);
 }

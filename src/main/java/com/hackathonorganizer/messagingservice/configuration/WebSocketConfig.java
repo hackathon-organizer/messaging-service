@@ -14,6 +14,8 @@ public class WebSocketConfig implements WebSocketConfigurer {
     private final MessageService messageService;
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new SignalHandler(messageService), "/messages-websocket").setAllowedOrigins("*");
+        registry.addHandler(new SignalHandler(messageService),
+                "/messages-websocket")
+                .setAllowedOrigins("*");
     }
 }

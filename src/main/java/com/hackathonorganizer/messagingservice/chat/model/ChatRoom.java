@@ -1,5 +1,6 @@
 package com.hackathonorganizer.messagingservice.chat.model;
 
+import com.sun.istack.NotNull;
 import lombok.*;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -22,5 +23,6 @@ public class ChatRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotNull
     private Long teamId;
 }

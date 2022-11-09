@@ -3,7 +3,7 @@ package com.hackathonorganizer.messagingservice.websocket.service;
 
 import com.hackathonorganizer.messagingservice.websocket.model.Message;
 import com.hackathonorganizer.messagingservice.chat.repository.MessageRepository;
-import com.hackathonorganizer.messagingservice.websocket.model.ChatEntry;
+import com.hackathonorganizer.messagingservice.websocket.model.dto.ChatEntryDto;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +17,9 @@ import java.time.LocalDateTime;
 @Slf4j
 public class MessageService {
 
-
     private final MessageRepository messageRepository;
 
-
-
-    public ChatEntry saveChatMessage(Message message) {
+    public ChatEntryDto saveChatMessage(Message message) {
 
         message.setCreatedAt(LocalDateTime.now());
 
@@ -31,11 +28,11 @@ public class MessageService {
         return mapToDto(savedMessage);
     }
 
-    private ChatEntry mapToDto(Message message) {
-        return ChatEntry.builder()
-                .username(message.getUsername())
-                .entryText(message.getEntryText())
-                .createdAt(message.getCreatedAt())
-                .build();
+    private ChatEntryDto mapToDto(Message message) {
+        return new ChatEntryDto(
+                message.getUsername(),
+                message.getEntryText(),
+                message.getCreatedAt()
+                );
     }
 }

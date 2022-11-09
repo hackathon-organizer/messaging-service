@@ -16,11 +16,13 @@ public class ChatController {
 
     @PostMapping
     public Long createTeamChatRoom(@RequestBody Long teamId) {
+
         return chatService.createTeamChat(teamId);
     }
 
     @GetMapping("/rooms/{roomId}")
     public List<Message> getChatRoomMessages(@PathVariable("roomId") Long roomId) {
+
         return chatService.getChatRoomMessages(roomId);
     }
 

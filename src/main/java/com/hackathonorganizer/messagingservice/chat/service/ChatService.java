@@ -23,17 +23,16 @@ public class ChatService {
 
         ChatRoom room = ChatRoom.builder().teamId(teamId).build();
 
-        log.info("Chat room for team with id: " + teamId + " created successfully");
+        ChatRoom savedChatRoom = chatRoomRepository.save(room);
 
-        return chatRoomRepository.save(room).getId();
+        log.info("Chat room for team with id: {} created successfully", savedChatRoom.getId());
+
+        return savedChatRoom.getId();
     }
 
     public List<Message> getChatRoomMessages(Long roomId) {
 
-        List<Message> roomMessages =
-                messageRepository.findMessagesByChatId(roomId);
-
-        return roomMessages;
+        return messageRepository.findMessagesByChatId(roomId);
     }
 
 }
