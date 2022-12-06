@@ -18,7 +18,6 @@ public class ChatService {
     private final ChatRoomRepository chatRoomRepository;
     private final MessageRepository messageRepository;
 
-
     public Long createTeamChat(Long teamId) {
 
         ChatRoom room = ChatRoom.builder().teamId(teamId).build();

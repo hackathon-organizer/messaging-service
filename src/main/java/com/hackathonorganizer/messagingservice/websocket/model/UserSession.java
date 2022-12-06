@@ -1,15 +1,19 @@
 package com.hackathonorganizer.messagingservice.websocket.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.web.socket.WebSocketSession;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Getter
 @Setter
+@ToString
+@AllArgsConstructor
 public class UserSession {
 
-    String username;
-    WebSocketSession session;
+    private final String username;
+    private final WebSocketSession session;
+
+    private String videoSessionId;
+
+    private String videoSessionToken;
 }
