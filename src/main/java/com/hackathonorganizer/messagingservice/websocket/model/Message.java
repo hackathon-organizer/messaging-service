@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class Message {
 
     @Id
@@ -30,7 +31,7 @@ public class Message {
     String username;
 
     @NotNull
-    Long chatId;
+    Long teamId;
 
     @NotNull
     Long userId;

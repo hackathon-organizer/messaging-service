@@ -9,8 +9,8 @@ import java.time.LocalDateTime;
 
 public record ChatEntryDto (
 
-    String entryText,
     String username,
+    String entryText,
 
     @JsonDeserialize(using = LocalDateDeserializer.class)
     @JsonFormat(pattern = "HH:mm dd-MM-yyyy")

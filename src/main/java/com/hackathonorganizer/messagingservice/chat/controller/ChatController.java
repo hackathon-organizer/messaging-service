@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.security.RolesAllowed;
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -20,15 +22,10 @@ public class ChatController {
 
     private final ChatService chatService;
 
-    @PostMapping
-    public Long createTeamChatRoom(@RequestBody Long teamId) {
-
-        return chatService.createTeamChat(teamId);
-    }
-
     @GetMapping("/rooms/{roomId}")
-    public List<Message> getChatRoomMessages(@PathVariable("roomId") Long roomId) {
+    @RolesAllowed({"USER", "MENTOR", "ORGANIZER"})
+    public List<Message> getChatMessages(@PathVariable("roomId") Long roomId, Principal principal) {
 
-        return chatService.getChatRoomMessages(roomId);
+        return chatService.getChatRoomMessages(roomId, principal);
     }
 }

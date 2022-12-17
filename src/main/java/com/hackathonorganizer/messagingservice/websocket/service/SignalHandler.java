@@ -24,6 +24,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.util.*;
 
 @Slf4j
@@ -33,18 +34,15 @@ public class SignalHandler extends TextWebSocketHandler  {
     
     private final Map<Long, List<UserSession>> teamRooms = new HashMap<>();
 
-    private VaultProperties vaultProperties;
     private MessageService messageService;
     private Map<String, String> queryParams;
     private ObjectMapper objectMapper;
-
     private OpenVidu openvidu;
 
     public SignalHandler() {
     }
 
     public SignalHandler(VaultProperties vaultProperties, MessageService messageService) {
-        this.vaultProperties = vaultProperties;
         this.messageService = messageService;
 
         this.objectMapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
@@ -145,7 +143,6 @@ public class SignalHandler extends TextWebSocketHandler  {
 
             userSession.setVideoSessionId(videoSessionId);
             userSession.setVideoSessionToken(getUserVideoSessionToken(videoSessionId));
-
 
             teamRooms.put(chatId, sessionsList);
             sendVideoSessionDetails(userSession);
