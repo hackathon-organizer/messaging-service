@@ -88,9 +88,8 @@ public class SignalHandler extends TextWebSocketHandler {
 
                 log.warn("Sending signal to chat participants failed: \n {}", ex.getMessage());
 
-                throw new SignalServerException(String.format("Sending signal to chat participants failed: \n %s",
-                        ex.getMessage())
-                );
+                throw new MessagingException(String.format("Sending signal to chat participants failed: \n %s",
+                        ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
             }
         });
     }
