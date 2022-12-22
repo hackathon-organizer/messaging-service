@@ -1,4 +1,4 @@
-package com.hackathonorganizer.messagingservice.websocket.model;
+package com.hackathonorganizer.messagingservice.utils;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

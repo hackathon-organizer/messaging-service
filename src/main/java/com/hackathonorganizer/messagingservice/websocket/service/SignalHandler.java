@@ -5,33 +5,32 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.hackathonorganizer.messagingservice.configuration.VaultProperties;
-import com.hackathonorganizer.messagingservice.exception.SignalServerException;
+import com.hackathonorganizer.messagingservice.exception.MessagingException;
+import com.hackathonorganizer.messagingservice.utils.Message;
+import com.hackathonorganizer.messagingservice.utils.MessageType;
+import com.hackathonorganizer.messagingservice.websocket.model.UserSession;
 import com.hackathonorganizer.messagingservice.websocket.model.dto.ChatEntryDto;
-import com.hackathonorganizer.messagingservice.websocket.model.Message;
-import com.hackathonorganizer.messagingservice.websocket.model.*;
 import com.hackathonorganizer.messagingservice.websocket.model.dto.MessageDto;
 import com.hackathonorganizer.messagingservice.websocket.model.dto.UserSessionDto;
 import io.openvidu.java.client.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
-
-
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
-import java.security.Principal;
 import java.util.*;
 
 @Slf4j
 @Service
 @EnableConfigurationProperties(VaultProperties.class)
-public class SignalHandler extends TextWebSocketHandler  {
-    
+public class SignalHandler extends TextWebSocketHandler {
+
     private final Map<Long, List<UserSession>> teamRooms = new HashMap<>();
 
     private MessageService messageService;
@@ -40,9 +39,11 @@ public class SignalHandler extends TextWebSocketHandler  {
     private OpenVidu openvidu;
 
     public SignalHandler() {
+
     }
 
     public SignalHandler(VaultProperties vaultProperties, MessageService messageService) {
+
         this.messageService = messageService;
 
         this.objectMapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
@@ -71,13 +72,13 @@ public class SignalHandler extends TextWebSocketHandler  {
             textMessage = new TextMessage(objectMapper.writeValueAsString(messageDto));
         } else {
 
-        message = objectMapper.convertValue(messageDto.data(), Message.class);
+            message = objectMapper.convertValue(messageDto.data(), Message.class);
 
-        ChatEntryDto chatEntryDto = messageService.saveChatMessage(message);
+            ChatEntryDto chatEntryDto = messageService.saveChatMessage(message);
 
-        MessageDto messageResponse = new MessageDto(MessageType.MESSAGE, chatEntryDto);
+            MessageDto messageResponse = new MessageDto(MessageType.MESSAGE, chatEntryDto);
 
-        textMessage = new TextMessage(objectMapper.writeValueAsString(messageResponse));
+            textMessage = new TextMessage(objectMapper.writeValueAsString(messageResponse));
         }
 
         this.teamRooms.get(chatId).forEach(s -> {
@@ -87,12 +88,13 @@ public class SignalHandler extends TextWebSocketHandler  {
 
                 log.warn("Sending signal to chat participants failed: \n {}", ex.getMessage());
 
-                throw new SignalServerException(
-                        String.format("Sending signal to chat participants failed: \n %s", ex.getMessage())
+                throw new SignalServerException(String.format("Sending signal to chat participants failed: \n %s",
+                        ex.getMessage())
                 );
             }
         });
     }
+
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 
@@ -102,15 +104,13 @@ public class SignalHandler extends TextWebSocketHandler  {
 
             log.warn("Session: {} uri is null", session.getUri());
 
-            throw new SignalServerException(
-                    String.format("Session: %s uri is null", session.getUri())
-            );
+            throw new MessagingException(String.format("Session: %s uri is null", session.getUri()), HttpStatus.BAD_REQUEST);
         }
 
         String sessionUri = session.getUri().toString();
 
         queryParams = UriComponentsBuilder.fromUriString(sessionUri)
-                        .build().getQueryParams().toSingleValueMap();
+                .build().getQueryParams().toSingleValueMap();
 
         String username = getUsernameFromQueryParams();
         Long chatId = getChatIdFromQueryParams();
@@ -120,7 +120,8 @@ public class SignalHandler extends TextWebSocketHandler  {
         sendUserJoinNotification(chatId);
     }
 
-    private void storeUserSession(Long chatId, String username, WebSocketSession session) throws OpenViduJavaClientException, OpenViduHttpException, JsonProcessingException {
+    private void storeUserSession(Long chatId, String username, WebSocketSession session) throws OpenViduJavaClientException,
+            OpenViduHttpException, JsonProcessingException {
 
         UserSession userSession = new UserSession(username, session);
 
@@ -151,30 +152,28 @@ public class SignalHandler extends TextWebSocketHandler  {
 
     private void sendVideoSessionDetails(UserSession userSession) throws JsonProcessingException {
 
-        log.error(userSession.toString());
-
         UserSessionDto userSessionDto = new UserSessionDto(
                 userSession.getVideoSessionId(),
                 userSession.getVideoSessionToken()
         );
 
-        log.error(userSessionDto.toString());
-
         MessageDto messageDto = new MessageDto(MessageType.SESSION, userSessionDto);
 
         TextMessage chatSessions = new TextMessage(objectMapper.writeValueAsString(messageDto));
 
-            try {
-                userSession.getSession().sendMessage(chatSessions);
-            } catch (IOException ex) {
+        try {
+            userSession.getSession().sendMessage(chatSessions);
+        } catch (IOException ex) {
 
-                log.warn("Sending session data to user failed: {}", ex.getMessage());
+            log.warn("Sending session data to user failed: {}", ex.getMessage());
 
-                throw new SignalServerException(String.format("Sending session data to user failed: %s", ex.getMessage()));
-            }
+            throw new MessagingException(String.format("Sending session data to user failed: %s", ex.getMessage()),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private String createNewVideoSession() throws OpenViduJavaClientException, OpenViduHttpException {
+
         UUID uuid = UUID.randomUUID();
         SessionProperties sessionProperties = new SessionProperties.Builder().customSessionId(uuid.toString()).build();
 
@@ -185,7 +184,7 @@ public class SignalHandler extends TextWebSocketHandler  {
 
         Session session = openvidu.getActiveSession(sessionId);
         if (session == null) {
-            throw new SignalServerException("Session with id " + sessionId + " not found");
+            throw new MessagingException("Session with id " + sessionId + " not found", HttpStatus.NOT_FOUND);
         }
         Connection connection = session.createConnection();
         return connection.getToken();
@@ -193,8 +192,7 @@ public class SignalHandler extends TextWebSocketHandler  {
 
     private void sendUserJoinNotification(Long chatId) throws IOException {
 
-        List<String> sessionUsernamesList =
-                this.teamRooms.get(chatId).stream().map(UserSession::getUsername).toList();
+        List<String> sessionUsernamesList = this.teamRooms.get(chatId).stream().map(UserSession::getUsername).toList();
 
         MessageDto messageDto = new MessageDto(MessageType.JOIN, sessionUsernamesList);
 
@@ -207,31 +205,29 @@ public class SignalHandler extends TextWebSocketHandler  {
 
                 log.warn("Sending signal to chat participants failed: \n {}", ex.getMessage());
 
-                throw new SignalServerException(
-                        String.format("Sending signal to chat participants failed: \n %s", ex.getMessage())
-                );
+                throw new MessagingException(String.format("Sending signal to chat participants failed: \n %s", ex.getMessage()),
+                        HttpStatus.INTERNAL_SERVER_ERROR);
             }
         });
     }
-    
+
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
 
-        log.warn(status.toString());
-
         Long chatId = Long.parseLong(queryParams.get("chatId"));
 
-        this.teamRooms.get(chatId).removeIf(userSession ->
-                userSession.getSession().getId().equals(session.getId()));
+        this.teamRooms.get(chatId).removeIf(userSession -> userSession.getSession().getId().equals(session.getId()));
 
         log.info("Closed session {}", session.getId());
     }
 
     private Long getChatIdFromQueryParams() {
+
         return Long.parseLong(queryParams.get("chatId"));
     }
 
     private String getUsernameFromQueryParams() {
+
         return queryParams.get("username");
     }
 }

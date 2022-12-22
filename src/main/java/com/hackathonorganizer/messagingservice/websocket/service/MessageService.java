@@ -1,8 +1,8 @@
 package com.hackathonorganizer.messagingservice.websocket.service;
 
 
-import com.hackathonorganizer.messagingservice.websocket.model.Message;
 import com.hackathonorganizer.messagingservice.chat.repository.MessageRepository;
+import com.hackathonorganizer.messagingservice.utils.Message;
 import com.hackathonorganizer.messagingservice.websocket.model.dto.ChatEntryDto;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -29,10 +29,10 @@ public class MessageService {
     }
 
     private ChatEntryDto mapToDto(Message message) {
+
         return new ChatEntryDto(
                 message.getUsername(),
                 message.getEntryText(),
-                message.getCreatedAt()
-                );
+                message.getCreatedAt());
     }
 }

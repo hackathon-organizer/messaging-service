@@ -7,14 +7,14 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateDeserializer;
 import java.time.LocalDateTime;
 
 
-public record ChatEntryDto (
+public record ChatEntryDto(
 
-    String username,
-    String entryText,
+        String username,
+        String entryText,
 
-    @JsonDeserialize(using = LocalDateDeserializer.class)
-    @JsonFormat(pattern = "HH:mm dd-MM-yyyy")
-    LocalDateTime createdAt
+        @JsonDeserialize(using = LocalDateDeserializer.class)
+        @JsonFormat(pattern = "HH:mm dd-MM-yyyy")
+        LocalDateTime createdAt
 ) {
 }
 

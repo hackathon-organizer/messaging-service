@@ -17,10 +17,10 @@ public class ResourceServerConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
         http
                 .authorizeRequests()
                 .antMatchers("/messages-websocket").permitAll()
-                 // OR .access("authenticated AND hasRole('product_read')")
                 .anyRequest().authenticated()
                 .and()
                 .oauth2ResourceServer()
@@ -28,6 +28,7 @@ public class ResourceServerConfig extends WebSecurityConfigurerAdapter {
     }
 
     private Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthenticationConverter() {
+
         JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
         jwtConverter.setJwtGrantedAuthoritiesConverter(new RealmRoleConverter());
         return jwtConverter;

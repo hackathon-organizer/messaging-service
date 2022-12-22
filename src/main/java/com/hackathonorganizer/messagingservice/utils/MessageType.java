@@ -1,4 +1,4 @@
-package com.hackathonorganizer.messagingservice.websocket.model;
+package com.hackathonorganizer.messagingservice.utils;
 
 public enum MessageType {
     JOIN,

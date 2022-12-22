@@ -1,12 +1,15 @@
 package com.hackathonorganizer.messagingservice.exception;
 
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
-public class ChatException extends RuntimeException {
+@Getter
+public class MessagingException extends RuntimeException {
 
     private final HttpStatus httpStatus;
 
-    public ChatException(String message, HttpStatus httpStatus) {
+    public MessagingException(String message, HttpStatus httpStatus) {
+
         super(message);
         this.httpStatus = httpStatus;
     }
