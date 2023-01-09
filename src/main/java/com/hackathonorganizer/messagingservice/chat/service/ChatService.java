@@ -8,6 +8,8 @@ import com.hackathonorganizer.messagingservice.utils.Message;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
@@ -22,11 +24,11 @@ public class ChatService {
 
     private final RestCommunicator restCommunicator;
 
-    public List<Message> getChatRoomMessages(Long roomId, Principal principal) {
+    public List<Message> getChatRoomMessages(Long roomId, Jwt principal) {
 
-        UserResponseDto userResponseDto = restCommunicator.getUserDetails(principal.getName());
+        UserResponseDto userResponseDto = restCommunicator.getUserDetails(principal.getClaim("sub"));
 
-        if (userResponseDto.currentTeamId().equals(roomId)) {
+        if (principal.getClaim("realm_access").toString().contains("MENTOR") || userResponseDto.currentTeamId().equals(roomId)) {
             return messageRepository.findMessagesByTeamId(roomId);
         } else {
             throw new MessagingException("User is not team member. Can't get chat messages.", HttpStatus.FORBIDDEN);

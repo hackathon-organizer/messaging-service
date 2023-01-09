@@ -16,12 +16,12 @@ public class RestCommunicator {
 
     private final RestTemplate restTemplate;
 
-    public UserResponseDto getUserDetails(String userKeycloakId) {
+    public UserResponseDto getUserDetails(String keycloakId) {
 
-        log.info("Trying to fetch details user with id: {} ", userKeycloakId);
+        log.info("Trying to fetch details user with id: {} ",keycloakId);
 
         try {
-            return restTemplate.getForObject("http://localhost:9090/api/v1/read/users/keycloak/" + userKeycloakId,
+            return restTemplate.getForObject("http://localhost:9090/api/v1/read/users/keycloak/" + keycloakId,
                     UserResponseDto.class);
         } catch (HttpServerErrorException.ServiceUnavailable ex) {
             log.warn("User service is unavailable. Can't get user details. {}", ex.getMessage());
@@ -30,5 +30,19 @@ public class RestCommunicator {
                     HttpStatus.SERVICE_UNAVAILABLE);
         }
     }
+
+//    public boolean hasUserMentorRole(String keycloakId) {
+//        log.info("Checking if user with id: {} is mentor ", keycloakId);
+//
+//        try {
+//            return restTemplate.getForObject("http://localhost:9090/api/v1/read/users/keycloak/" + keycloakId,
+//                    UserResponseDto.class);
+//        } catch (HttpServerErrorException.ServiceUnavailable ex) {
+//            log.warn("User service is unavailable. Can't get user details. {}", ex.getMessage());
+//
+//            throw new MessagingException("User service is unavailable. Can't get user details",
+//                    HttpStatus.SERVICE_UNAVAILABLE);
+//        }
+//    }
 
 }
