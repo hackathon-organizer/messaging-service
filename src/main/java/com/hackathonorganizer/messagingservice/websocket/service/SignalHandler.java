@@ -67,11 +67,8 @@ public class SignalHandler extends TextWebSocketHandler {
         } else {
 
             message = objectMapper.convertValue(messageDto.data(), Message.class);
-
             ChatEntryDto chatEntryDto = messageService.saveChatMessage(message);
-
             MessageDto messageResponse = new MessageDto(MessageType.MESSAGE, chatEntryDto);
-
             textMessage = new TextMessage(objectMapper.writeValueAsString(messageResponse));
         }
 
@@ -81,7 +78,6 @@ public class SignalHandler extends TextWebSocketHandler {
             } catch (IOException ex) {
 
                 log.warn("Sending signal to chat participants failed: \n {}", ex.getMessage());
-
                 throw new MessagingException(String.format("Sending signal to chat participants failed: \n %s",
                         ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
             }
@@ -92,24 +88,19 @@ public class SignalHandler extends TextWebSocketHandler {
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
 
         log.info("Session {} connected", session.getId());
-
         if (session.getUri() == null) {
 
             log.warn("Session: {} uri is null", session.getUri());
 
-            throw new MessagingException(String.format("Session: %s uri is null", session.getUri()), HttpStatus.BAD_REQUEST);
+            throw new MessagingException(String.format("Session: %s uri is null", session.getId()), HttpStatus.BAD_REQUEST);
         }
 
         String sessionUri = session.getUri().toString();
-
-        queryParams = UriComponentsBuilder.fromUriString(sessionUri)
-                .build().getQueryParams().toSingleValueMap();
-
+        queryParams = UriComponentsBuilder.fromUriString(sessionUri).build().getQueryParams().toSingleValueMap();
         String username = getUsernameFromQueryParams();
         Long chatId = getChatIdFromQueryParams();
 
         storeUserSession(chatId, username, session);
-
         sendUserJoinNotification(chatId);
     }
 
@@ -121,9 +112,7 @@ public class SignalHandler extends TextWebSocketHandler {
         if (teamRooms.get(chatId) != null && teamRooms.get(chatId).size() > 0) {
 
             UserSession masterSession = teamRooms.get(chatId).get(0);
-
             String sessionId = masterSession.getVideoSessionId();
-
             userSession.setVideoSessionId(sessionId);
             userSession.setVideoSessionToken(getUserVideoSessionToken(sessionId));
 
@@ -134,7 +123,6 @@ public class SignalHandler extends TextWebSocketHandler {
             sessionsList.add(userSession);
 
             String videoSessionId = createNewVideoSession();
-
             userSession.setVideoSessionId(videoSessionId);
             userSession.setVideoSessionToken(getUserVideoSessionToken(videoSessionId));
 
@@ -151,7 +139,6 @@ public class SignalHandler extends TextWebSocketHandler {
         );
 
         MessageDto messageDto = new MessageDto(MessageType.SESSION, userSessionDto);
-
         TextMessage chatSessions = new TextMessage(objectMapper.writeValueAsString(messageDto));
 
         try {
@@ -159,7 +146,6 @@ public class SignalHandler extends TextWebSocketHandler {
         } catch (IOException ex) {
 
             log.warn("Sending session data to user failed: {}", ex.getMessage());
-
             throw new MessagingException(String.format("Sending session data to user failed: %s", ex.getMessage()),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -177,8 +163,9 @@ public class SignalHandler extends TextWebSocketHandler {
 
         Session session = openvidu.getActiveSession(sessionId);
         if (session == null) {
-            throw new MessagingException("Session with id " + sessionId + " not found", HttpStatus.NOT_FOUND);
+            throw new MessagingException("OpenVidu session is null", HttpStatus.NOT_FOUND);
         }
+
         Connection connection = session.createConnection();
         return connection.getToken();
     }
@@ -188,7 +175,6 @@ public class SignalHandler extends TextWebSocketHandler {
         List<String> sessionUsernamesList = this.teamRooms.get(chatId).stream().map(UserSession::getUsername).toList();
 
         MessageDto messageDto = new MessageDto(MessageType.JOIN, sessionUsernamesList);
-
         TextMessage chatSessions = new TextMessage(objectMapper.writeValueAsString(messageDto));
 
         this.teamRooms.get(chatId).forEach(s -> {
@@ -197,7 +183,6 @@ public class SignalHandler extends TextWebSocketHandler {
             } catch (IOException ex) {
 
                 log.warn("Sending signal to chat participants failed: \n {}", ex.getMessage());
-
                 throw new MessagingException(String.format("Sending signal to chat participants failed: \n %s", ex.getMessage()),
                         HttpStatus.INTERNAL_SERVER_ERROR);
             }
@@ -210,17 +195,14 @@ public class SignalHandler extends TextWebSocketHandler {
         Long chatId = Long.parseLong(queryParams.get("chatId"));
 
         this.teamRooms.get(chatId).removeIf(userSession -> userSession.getSession().getId().equals(session.getId()));
-
         log.info("Closed session {}", session.getId());
     }
 
     private Long getChatIdFromQueryParams() {
-
         return Long.parseLong(queryParams.get("chatId"));
     }
 
     private String getUsernameFromQueryParams() {
-
         return queryParams.get("username");
     }
 }

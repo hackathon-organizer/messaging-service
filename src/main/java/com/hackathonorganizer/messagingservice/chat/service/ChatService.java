@@ -21,14 +21,15 @@ import java.util.List;
 public class ChatService {
 
     private final MessageRepository messageRepository;
-
     private final RestCommunicator restCommunicator;
 
     public List<Message> getChatRoomMessages(Long roomId, Jwt principal) {
 
         UserResponseDto userResponseDto = restCommunicator.getUserDetails(principal.getClaim("sub"));
 
-        if (principal.getClaim("realm_access").toString().contains("MENTOR") || userResponseDto.currentTeamId().equals(roomId)) {
+        if (principal.getClaim("realm_access").toString().contains("MENTOR") ||
+                userResponseDto.currentTeamId().equals(roomId)) {
+
             return messageRepository.findMessagesByTeamId(roomId);
         } else {
             throw new MessagingException("User is not team member. Can't get chat messages.", HttpStatus.FORBIDDEN);

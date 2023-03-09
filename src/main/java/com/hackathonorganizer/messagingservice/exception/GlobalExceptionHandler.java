@@ -13,8 +13,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({MessagingException.class})
     public ResponseEntity<ErrorResponse> handleChatException(MessagingException ex) {
 
-        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(),
-                List.of(ex.getMessage()));
+        ErrorResponse errorResponse = new ErrorResponse(ex.getMessage(), List.of(ex.getMessage()));
 
         return ResponseEntity.status(ex.getHttpStatus()).body(errorResponse);
     }

@@ -9,7 +9,6 @@ public class MessagingException extends RuntimeException {
     private final HttpStatus httpStatus;
 
     public MessagingException(String message, HttpStatus httpStatus) {
-
         super(message);
         this.httpStatus = httpStatus;
     }

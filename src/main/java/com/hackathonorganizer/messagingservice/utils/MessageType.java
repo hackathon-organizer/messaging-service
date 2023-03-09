@@ -5,5 +5,4 @@ public enum MessageType {
     MESSAGE,
     SESSION,
     VIDEO_IN_PROGRESS
-
 }

@@ -27,7 +27,6 @@ public class ChatController {
     @GetMapping("/rooms/{roomId}")
     @RolesAllowed("USER")
     public List<Message> getChatMessages(@PathVariable("roomId") Long roomId, @AuthenticationPrincipal Jwt jwt) {
-
         return chatService.getChatRoomMessages(roomId, jwt);
     }
 }

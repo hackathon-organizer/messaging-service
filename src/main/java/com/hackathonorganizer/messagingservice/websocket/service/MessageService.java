@@ -13,8 +13,6 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-@Setter
-@Slf4j
 public class MessageService {
 
     private final MessageRepository messageRepository;
@@ -22,7 +20,6 @@ public class MessageService {
     public ChatEntryDto saveChatMessage(Message message) {
 
         message.setCreatedAt(LocalDateTime.now());
-
         Message savedMessage = messageRepository.save(message);
 
         return mapToDto(savedMessage);
