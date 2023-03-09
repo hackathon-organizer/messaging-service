@@ -24,10 +24,10 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @NotEmpty(message = "Message must contain data")
+    @NotEmpty(message = "Message can not be empty!")
     String entryText;
 
-    @NotEmpty(message = "Username can't be empty")
+    @NotEmpty(message = "Username can not be empty!")
     String username;
 
     @NotNull

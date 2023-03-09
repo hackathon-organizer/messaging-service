@@ -1,6 +1,5 @@
 package com.hackathonorganizer.messagingservice.configuration;
 
-import com.hackathonorganizer.messagingservice.websocket.service.MessageService;
 import com.hackathonorganizer.messagingservice.websocket.service.SignalHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

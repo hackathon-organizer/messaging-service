@@ -5,8 +5,6 @@ import com.hackathonorganizer.messagingservice.chat.repository.MessageRepository
 import com.hackathonorganizer.messagingservice.utils.Message;
 import com.hackathonorganizer.messagingservice.websocket.model.dto.ChatEntryDto;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
