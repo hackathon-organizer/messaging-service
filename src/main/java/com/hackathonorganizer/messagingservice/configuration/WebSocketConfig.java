@@ -14,17 +14,14 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketConfigurer {
 
-    private final MessageService messageService;
-    private final VaultProperties vaultProperties;
-
     @Value("${ws.origins}")
     private String origins;
+
+    private final SignalHandler signalHandler;
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
 
-        registry.addHandler(new SignalHandler(vaultProperties, messageService),
-                        "/messages-websocket")
-                .setAllowedOrigins(origins);
+        registry.addHandler(signalHandler, "/messages-websocket").setAllowedOrigins(origins);
     }
 }

@@ -31,24 +31,18 @@ import java.util.*;
 @EnableConfigurationProperties(VaultProperties.class)
 public class SignalHandler extends TextWebSocketHandler {
 
-    private final Map<Long, List<UserSession>> teamRooms = new HashMap<>();
-
+    private Map<Long, List<UserSession>> teamRooms;
     private MessageService messageService;
     private Map<String, String> queryParams;
     private ObjectMapper objectMapper;
     private OpenVidu openvidu;
 
-    public SignalHandler() {
-
-    }
-
-    public SignalHandler(VaultProperties vaultProperties, MessageService messageService) {
-
+    public SignalHandler(MessageService messageService, VaultProperties vaultProperties) {
         this.messageService = messageService;
-
-        this.objectMapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
-
         this.openvidu = new OpenVidu(vaultProperties.getOpenViduHost(), vaultProperties.getOpenViduSecret());
+        this.objectMapper = JsonMapper.builder().addModule(new JavaTimeModule()).build();
+        this.queryParams = new HashMap<>();
+        this.teamRooms = new HashMap<>();
     }
 
     @Override
