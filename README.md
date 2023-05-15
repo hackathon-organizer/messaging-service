@@ -4,7 +4,10 @@ Messeging service works as [WebSocket](https://en.wikipedia.org/wiki/WebSocket) 
 
 # Responsibilities
 
-- 
+- Works as a WebSocket signal server that handles peer connections and sessions
+- Creates and manages [OpenVidu](https://openvidu.io/) sessions needed for voice/video chat and screen sharing
+- Uses REST API to fetch messages that belong to certain chat room
+- Saves chat messages to database
 
 # Live demo
 
