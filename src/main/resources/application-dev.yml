@@ -1,6 +1,6 @@
 spring:
   config:
-    import: optional:configserver:http://${CONFIG_SERVER_HOST}:${CONFIG_SERVER_PORT}
+    import: optional:configserver:http://localhost:8888/
   cloud:
     vault:
       generic:
@@ -20,6 +20,5 @@ spring:
 server:
   port: 0
 ws:
-  origins: ${WS_ORIGINS}
-
+  origins: '*'
 
