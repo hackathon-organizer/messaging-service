@@ -1,13 +1,6 @@
 spring:
-  profiles:
-    active: dev
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          jwk-set-uri: http://localhost:8080/auth/realms/hackathon-organizer/protocol/openid-connect/certs
   config:
-    import: optional:configserver:http://localhost:8888/
+    import: optional:configserver:http://${CONFIG_SERVER_HOST}:${CONFIG_SERVER_PORT}
   cloud:
     vault:
       generic:
@@ -27,6 +20,6 @@ spring:
 server:
   port: 0
 ws:
-  origins: ${WS.ORIGINS}
+  origins: ${WS_ORIGINS}
 
 

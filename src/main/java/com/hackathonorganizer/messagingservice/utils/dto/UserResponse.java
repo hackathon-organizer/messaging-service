@@ -1,6 +1,6 @@
 package com.hackathonorganizer.messagingservice.utils.dto;
 
-public record UserResponseDto(
+public record UserResponse(
 
         Long id,
         String username,

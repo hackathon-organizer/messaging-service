@@ -4,7 +4,7 @@ import com.hackathonorganizer.messagingservice.chat.repository.MessageRepository
 import com.hackathonorganizer.messagingservice.exception.MessagingException;
 import com.hackathonorganizer.messagingservice.utils.Message;
 import com.hackathonorganizer.messagingservice.utils.RestCommunicator;
-import com.hackathonorganizer.messagingservice.utils.dto.UserResponseDto;
+import com.hackathonorganizer.messagingservice.utils.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,10 +23,10 @@ public class ChatService {
 
     public List<Message> getChatRoomMessages(Long roomId, Jwt principal) {
 
-        UserResponseDto userResponseDto = restCommunicator.getUserDetails(principal.getClaim("sub"));
+        UserResponse userResponse = restCommunicator.getUserDetails(principal.getClaim("sub"));
 
         if (principal.getClaim("realm_access").toString().contains("MENTOR") ||
-                userResponseDto.currentTeamId().equals(roomId)) {
+                userResponse.currentTeamId().equals(roomId)) {
 
             return messageRepository.findMessagesByTeamId(roomId);
         } else {
