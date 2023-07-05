@@ -1,6 +1,6 @@
 # Hackathon Organizer MESSAGING-SERVICE
 
-Messeging service works as [WebSocket](https://en.wikipedia.org/wiki/WebSocket) signal server handler between clients and uses [REST API](https://en.wikipedia.org/wiki/Representational_state_transfer) to provide text chat messages.
+Messaging service works as [WebSocket](https://en.wikipedia.org/wiki/WebSocket) signal server handler between clients and uses [REST API](https://en.wikipedia.org/wiki/Representational_state_transfer) to provide text chat messages.
 
 # Responsibilities
 
